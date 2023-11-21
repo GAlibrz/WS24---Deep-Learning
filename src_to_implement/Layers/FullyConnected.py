@@ -1,8 +1,8 @@
 import numpy as np
 import tensorflow as tf
-import Base
+from Base import BaseLayer
 
-class FullyConnected(Base):
+class FullyConnected(BaseLayer):
 
 
     def __init__(self, input_size, output_size):

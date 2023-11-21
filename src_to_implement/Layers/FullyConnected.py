@@ -10,6 +10,7 @@ class FullyConnected(BaseLayer):
         self.trainable = self.trainable = True
         self.input_size = input_size
         self.output_size = output_size
+        self.input = None
         # + 1 is added here to represent for the biases, additional care is needed therefor in forward and bachward paths
         self.weights = np.random.rand(output_size, input_size)
         self.biases = np.zeros((output_size, 1))
@@ -17,6 +18,7 @@ class FullyConnected(BaseLayer):
         self._optimizer = None
 
     def forward(self, input_tensor):
+        self.input = input_tensor #needed in backward path
         weights_transpose = np.transpose(self.weights)
         result_without_biases = tf.matmul(weights_transpose, input_tensor)
         result_with_bias = tf.add(result_without_biases, self.biases)
@@ -30,4 +32,6 @@ class FullyConnected(BaseLayer):
         def optimizer(self, optimizer):
             self._optimizer = optimizer
             return self._optimizer
+        
+    def backward(self, error_tesnor):
         

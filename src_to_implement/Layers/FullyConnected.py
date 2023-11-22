@@ -31,22 +31,22 @@ class FullyConnected(BaseLayer):
         return result_with_biases
 
 
-        @property
-        def optimizer(self):
-            return self._optimizer
+    @property
+    def optimizer(self):
+        return self._optimizer
         
-        @optimizer.setter
-        def optimizer(self, optimizer):
-            self._optimizer = optimizer
-            return self._optimizer
+    @optimizer.setter
+    def optimizer(self, optimizer):
+        self._optimizer = optimizer
+        return self._optimizer
+    @property
+    def gradien_weights(self):
+        return self._gradient_weights  
+    
         
     def backward(self, error_tensor):
         self.gradien_weights_without_biases = tf.matmul(error_tensor, self.input.T)
         self.biases_gradient = tf.ones(self.output_size)
         self._gradient_weights =  tf.concat([self.gradien_weights_without_biases, self.biases_gradient[tf.newaxis, :]], axis=-1)
         self.weights = self._optimizer.calculate_update(self.weights, self._gradient_weights)
-    
-    @property
-    def gradien_weights(self):
-        return self._gradient_weights  
     

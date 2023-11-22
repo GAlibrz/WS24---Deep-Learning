@@ -38,11 +38,9 @@ class FullyConnected(BaseLayer):
         self.gradien_weights_without_biases = tf.matmul(error_tensor, self.input.T)
         self.biases_gradient = tf.ones(self.output_size)
         self._gradient_weights =  tf.concat([self.gradien_weights_without_biases, self.biases_gradient[tf.newaxis, :]], axis=-1)
-        self.weights = self._optimizer.calculate_update(self.weights, self.gradien_weights)
+        self.weights = self._optimizer.calculate_update(self.weights, self._gradient_weights)
     
     @property
     def gradien_weights(self):
         return self._gradient_weights  
     
-    def calculate_update(self, weight_tensor, gradient_tensor):
-        if self._optimizer:

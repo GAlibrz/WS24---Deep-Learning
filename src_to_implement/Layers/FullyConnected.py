@@ -19,7 +19,7 @@ class FullyConnected(BaseLayer):
         self._optimizer = None
 
 
-        print("i do not have the time")
+        #print("i do not have the time")
 
     def forward(self, input_tensor):
         self.input = input_tensor #needed in backward path

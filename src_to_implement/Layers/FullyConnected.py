@@ -1,6 +1,7 @@
 import numpy as np
 import tensorflow as tf
 from Base import BaseLayer
+from Optimization import Optimizers
 
 class FullyConnected(BaseLayer):
 
@@ -33,5 +34,15 @@ class FullyConnected(BaseLayer):
             self._optimizer = optimizer
             return self._optimizer
         
-    def backward(self, error_tesnor):
-        
+    def backward(self, error_tensor):
+        self.gradien_weights_without_biases = tf.matmul(error_tensor, self.input.T)
+        self.biases_gradient = tf.ones(self.output_size)
+        self._gradient_weights =  tf.concat([self.gradien_weights_without_biases, self.biases_gradient[tf.newaxis, :]], axis=-1)
+        self.weights = self._optimizer.calculate_update(self.weights, self.gradien_weights)
+    
+    @property
+    def gradien_weights(self):
+        return self._gradient_weights  
+    
+    def calculate_update(self, weight_tensor, gradient_tensor):
+        if self._optimizer:

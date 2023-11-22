@@ -45,8 +45,18 @@ class FullyConnected(BaseLayer):
     
         
     def backward(self, error_tensor):
+        '''
+            derivatives of output of the layer with respect to weights of this layer is input
+            becuase out = In.W(transpose)
+
+            derivatives of bias with respect to weights is
+        '''
         self.gradien_weights_without_biases = tf.matmul(error_tensor, self.input.T)
-        self.biases_gradient = tf.ones(self.output_size)
-        self._gradient_weights =  tf.concat([self.gradien_weights_without_biases, self.biases_gradient[tf.newaxis, :]], axis=-1)
+
+        #self.biases_gradient = error_tensor
+        self.biases_gradient = tf.reduce_sum(error_tensor, axis=0, keepdims=True)
+
+        #self._gradient_weights =  tf.concat([self.gradien_weights_without_biases, self.biases_gradient[tf.newaxis, :]], axis=-1)
+        self.gradient_weights = tf.concat([self.gradient_weights_without_biases, self.biases_gradient], axis=0)
+
         self.weights = self._optimizer.calculate_update(self.weights, self._gradient_weights)
-    

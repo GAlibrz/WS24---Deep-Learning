@@ -10,14 +10,12 @@ class SoftMax(BaseLayer):
 
     def forward(self, input_tensor):
         self.input_tensor = input_tensor
-        exp_values = np.exp(input_tensor - np.max(input_tensor, axis=-1, keepdims=True))
-        return exp_values / np.sum(exp_values, axis=-1, keepdims=True)
+        e_x = np.exp(input_tensor - np.max(input_tensor))
+        return e_x / e_x.sum(axis=0) # only difference
 
     def backward(self, error_tensor):
-        batch_size = error_tensor.shape[0]
-
-        jacobian_matrix = np.array([np.diag(p) - np.outer(p, p) for p in self.probabilities])
-
-        grad_input = np.array([np.dot(jacobian_matrix[i], error_tensor[i]) for i in range(batch_size)])
-
-        return grad_input
+        s = self.input_tensor.reshape(-1, 1)
+        # Compute the Jacobian matrix of the softmax function
+        jacobian_matrix = np.diagflat(s) - np.dot(s, s.T)
+        # Compute the product of the Jacobian matrix and the error tensor
+        return np.dot(jacobian_matrix, error_tensor)

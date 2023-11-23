@@ -1,6 +1,6 @@
 from Base import BaseLayer
 import tensorflow as tf
-
+import numpy as np
 
 class ReLU(BaseLayer):
     def __init__(self):
@@ -9,7 +9,7 @@ class ReLU(BaseLayer):
 
     def forward(self, input_tensor):
         self.input_tensor = input_tensor
-        return tf.nn.relu(input_tensor)
+        return np.maximum(0, input_tensor)
 
     def backward(self, error_tensor):
-        return tf.multiply(tf.cast(tf.greater(self.input_tensor, 0), tf.float32), error_tensor)
+        return error_tensor * (self.input_tensor > 0)

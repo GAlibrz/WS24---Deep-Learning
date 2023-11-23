@@ -17,16 +17,26 @@ class BaseLayer:
 class SoftMax(BaseLayer):
     def __init__(self):
         super().__init__()
-        self.input_tensor = None
+        self.probabilities = None
 
     def forward(self, input_tensor):
-        self.input_tensor = input_tensor
-        e_x = np.exp(input_tensor - np.max(input_tensor))
-        return e_x / e_x.sum(axis=0) # only difference
+        exp_values = np.exp(input_tensor - np.max(input_tensor, axis=-1, keepdims=True))
+        probabilities = exp_values / np.sum(exp_values, axis=-1, keepdims=True)
+        self.probabilities = probabilities
+        return probabilities
 
     def backward(self, error_tensor):
-        s = self.input_tensor.reshape(-1, 1)
-        # Compute the Jacobian matrix of the softmax function
-        jacobian_matrix = np.diagflat(s) - np.dot(s, s.T)
-        # Compute the product of the Jacobian matrix and the error tensor
-        return np.dot(jacobian_matrix, error_tensor)
+        # Get the number of samples in the batch
+        batch_size = error_tensor.shape[0]
+
+        # Compute the derivative of softmax with cross-entropy loss
+        gradients = self.probabilities.copy()
+
+        for i in range(batch_size):
+            # Compute the inner summation term
+            inner_sum = np.sum(error_tensor[i] * self.probabilities[i])
+            
+            # Apply the formula for each sample
+            gradients[i] = self.probabilities[i] * (error_tensor[i] - inner_sum)
+
+        return gradients

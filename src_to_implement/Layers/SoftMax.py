@@ -1,5 +1,7 @@
 import tensorflow as tf
+import numpy as np
 from Base import BaseLayer
+
 
 class SoftMax(BaseLayer):
     def __init__(self):
@@ -8,7 +10,14 @@ class SoftMax(BaseLayer):
 
     def forward(self, input_tensor):
         self.input_tensor = input_tensor
-        return tf.nn.softmax(input_tensor)
+        exp_values = np.exp(input_tensor - np.max(input_tensor, axis=-1, keepdims=True))
+        return exp_values / np.sum(exp_values, axis=-1, keepdims=True)
 
     def backward(self, error_tensor):
-        return tf.multiply(tf.cast(tf.greater(self.input_tensor, 0), tf.float32), error_tensor)
+        batch_size = error_tensor.shape[0]
+
+        jacobian_matrix = np.array([np.diag(p) - np.outer(p, p) for p in self.probabilities])
+
+        grad_input = np.array([np.dot(jacobian_matrix[i], error_tensor[i]) for i in range(batch_size)])
+
+        return grad_input

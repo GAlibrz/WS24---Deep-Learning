@@ -27,9 +27,10 @@ class FullyConnected(BaseLayer):
         # Use tf.random.normal for weight initialization
         self.weights_no_biases = np.random.normal(size = (input_size, output_size))
         #print(input_size, '  ', output_size, self.weights_no_biases.shape)
-        self.biases = np.zeros((1, output_size))
+        self.biases = np.random.normal(size = (1, output_size))
         self.weights = np.concatenate([self.weights_no_biases, self.biases], axis=0)
         self._optimizer = None
+        print(self.weights.shape)
 
     def forward(self, input_tensor):
         #print(self.trainable)

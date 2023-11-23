@@ -3,8 +3,6 @@ from Layers import *
 from Optimization import *
 import numpy as np
 import NeuralNetwork
-import matplotlib.pyplot as plt
-import tabulate
 import argparse
 
 
@@ -13,4 +11,4 @@ batch_size = 9
 output_size = 3
 input_tensor = np.random.rand(batch_size, input_size)
 layer = FullyConnected.FullyConnected(input_size, output_size)
-layer.forward(input_tensor)
+output_tensor = layer.forward(input_tensor)

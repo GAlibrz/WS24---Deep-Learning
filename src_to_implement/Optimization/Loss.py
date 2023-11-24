@@ -1,12 +1,14 @@
-import tensorflow as tf
+import numpy as np
+
 
 class CrossEntropyLoss:
     def __init__(self):
-        self.label_tensor = None
+        super().__init__()
+        self.prediction_store = None
 
-    def forward(prediction_tensor, label_tensor):
-        self.label_tensor = label_tensor
-        return tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits_v2(logits=prediction_tensor, labels=label_tensor))
-    
-    def backward(label_tensor):
-        return tf.nn.softmax(label_tensor)
+    def forward(self, input_tensor, label_tensor):
+        self.prediction_store = input_tensor
+        return np.sum(-np.log(input_tensor[label_tensor == 1] + np.finfo(float).eps))
+
+    def backward(self, label_tensor):
+        return -np.divide(label_tensor, self.prediction_store)

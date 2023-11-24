@@ -34,6 +34,9 @@ class NeuralNetwork:
         self.iterational_losses = []
         for i in iterations:
             self.forward()
+            self.iterational_losses.append(self.backward())
+            #? why are lebels propagated backwardly not the difference of forward and lables
+
             
             
 

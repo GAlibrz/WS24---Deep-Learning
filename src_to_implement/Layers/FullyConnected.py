@@ -8,24 +8,14 @@ class FullyConnected(BaseLayer):
     def __init__(self, input_size, output_size):
         super().__init__()
         self.trainable = True
-        self.input_size = input_size
-        self.output_size = output_size
+        self.input_size = int(input_size)
+        self.output_size = int(output_size)
+        self.weights = np.random.uniform(low = 0.0, high = 1.0, size = (self.input_size + 1, self.output_size))
         self.input = None
-
-        # Use tf.random.normal for weight initialization
-        self.weights_no_biases = np.random.normal(size = (input_size, output_size))
-        #print(input_size, '  ', output_size, self.weights_no_biases.shape)
-        self.biases = np.random.normal(size = (1, output_size))
-        self.weights = np.concatenate([self.weights_no_biases, self.biases], axis=0)
         self._optimizer = None
+        self._gradient_weights = None
         print(self.weights.shape)
 
-    def forward(self, input_tensor):
-        #print(self.trainable)
-        self.input = input_tensor
-        result_without_biases = np.dot(input_tensor, self.weights_no_biases)
-        result_with_biases = result_without_biases + self.biases
-        return result_with_biases
 
     @property
     def optimizer(self):
@@ -38,15 +28,21 @@ class FullyConnected(BaseLayer):
     @property
     def gradient_weights(self):
         return self._gradient_weights
+    
+    @gradient_weights.setter
+    def gradient_weights(self, value):
+        self._gradient_weights = value
 
+    def forward(self, input_tensor):
+        #print(self.trainable)
+        tmp = np.ones((input_tensor.shape[0], 1))
+        self.input = np.concatenate((input_tensor, tmp), axis= 1)
+        result = np.dot(self.input, self.weights)
+        return result
+    
     def backward(self, error_tensor):
-        self.gradient_weights_without_biases = np.dot(np.transpose(self.input), error_tensor)
-        self.biases_gradient = np.sum(error_tensor, axis=0)
-
-        # Concatenate weights and biases into one matrix
-        self._gradient_weights = np.concatenate([self.gradient_weights_without_biases, self.biases_gradient], axis=0)
-
-        # Assuming self._optimizer is an instance of the Optimizers class
-        self.weights = self._optimizer.calculate_update(self.weights_and_biases, self._gradient_weights)
-        self.weights_no_biases = self.weights_and_biases[:-1, :]
-        self.biases = self.weights_and_biases[-1, :]
+        gradient_input = np.dot(error_tensor, np.transpose(self.weights))
+        self._gradient_weights = np.dot(np.transpose(self.input), error_tensor)
+        if self._optimizer:
+            self.weights = self._optimizer.calculate_update(self.weights, self._gradient_weights)
+        return gradient_input[ : , :self.input_size]

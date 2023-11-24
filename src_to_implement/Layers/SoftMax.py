@@ -4,26 +4,21 @@ from .Base import BaseLayer
 class SoftMax(BaseLayer):
     def __init__(self):
         super().__init__()
-        self.probabilities = None
+        self.prediction_store = None
 
     def forward(self, input_tensor):
-        exp_values = np.exp(input_tensor - np.max(input_tensor, axis=-1, keepdims=True))
-        probabilities = exp_values / np.sum(exp_values, axis=-1, keepdims=True)
-        self.probabilities = probabilities
-        return probabilities
+        # return estimated class probabilities
+        output_tensor = np.zeros_like(input_tensor)
+        for i in range(input_tensor.shape[0]):  # batch size
+            curr = input_tensor[i, :] - np.max(input_tensor[i, :])
+            output_tensor[i, :] = np.exp(curr) / np.sum(np.exp(curr))
+        self.prediction_store = output_tensor
+        return output_tensor
 
     def backward(self, error_tensor):
-        # Get the number of samples in the batch
-        batch_size = error_tensor.shape[0]
-
-        # Compute the derivative of softmax with cross-entropy loss
-        gradients = self.probabilities.copy()
-
-        for i in range(batch_size):
-            # Compute the inner summation term
-            inner_sum = np.sum(error_tensor[i] * self.probabilities[i])
-            
-            # Apply the formula for each sample
-            gradients[i] = self.probabilities[i] * (error_tensor[i] - inner_sum)
-
-        return gradients
+        error_n = np.zeros_like(error_tensor)
+        for i in range(error_tensor.shape[0]):  # batch size
+            y_hat = self.prediction_store[i, :]
+            e_n = error_tensor[i, :]
+            error_n[i, :] = np.multiply(y_hat, e_n - np.dot(e_n, y_hat))
+        return error_n
